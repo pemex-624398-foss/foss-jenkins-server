@@ -40,8 +40,8 @@ docker volume create foss-jenkins-server_jenkins-home
 docker run --name foss-dind --rm --detach --privileged --network foss --network-alias docker --env DOCKER_TLS_CERTDIR=/certs --volume "foss-jenkins-server_certs:/certs/client" --volume "foss-jenkins-server_dind-docker:/var/lib/docker" --volume "foss-jenkins-server_dind-data:/var/jenkins_home" --publish 2376:2376 docker:20.10.14-dind --storage-driver overlay2
 
 # 4. Iniciar Jenkins
-docker build -t jenkins-docker:2.332.2-lt .
-docker run --name foss-jenkins --rm --detach --network foss --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --publish 8080:8080 --publish 50000:50000 --volume "foss-jenkins-server_jenkins-home:/var/jenkins_home" --volume "foss-jenkins-server_certs:/certs/client:ro" jenkins-docker:2.332.2-lt
+docker build -t jenkins-docker:2.332.2-lts .
+docker run --name foss-jenkins --rm --detach --network foss --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --publish 8080:8080 --publish 50000:50000 --volume "foss-jenkins-server_jenkins-home:/var/jenkins_home" --volume "foss-jenkins-server_certs:/certs/client:ro" jenkins-docker:2.332.2-lts
 
 # 5. Obtener Password Inicial de Administrador
 docker exec foss-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
