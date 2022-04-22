@@ -50,10 +50,11 @@ docker run --name foss-dind --restart unless-stopped --detach --privileged --net
 
 # 4. Iniciar Jenkins
 ## Classic
-docker build -t jenkins-docker:2.332.2-lts .
+docker build -t jenkins-docker:2.332.2-lts ./classic
 docker run --name foss-jenkins --restart unless-stopped --detach --privileged --network foss --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --publish 8080:8080 --publish 50000:50000 --volume "/var/run/docker.sock:/var/run/docker.sock" --volume "foss-jenkins-server_jenkins-home:/var/jenkins_home" --volume "foss-jenkins-server_certs:/certs/client:ro" jenkins-docker:2.332.2-lts
 
-docker build -t jenkins-blue:2.332.2-lts .
+## Blue Ocean
+docker build -t jenkins-blue:2.332.2-lts ./blue-ocean
 docker run --name foss-jenkins-blue --restart unless-stopped --detach --privileged --network foss --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --publish 8080:8080 --publish 50000:50000 --volume "/var/run/docker.sock:/var/run/docker.sock" --volume "foss-jenkins-server_jenkins-home-blue:/var/jenkins_home" --volume "foss-jenkins-server_certs-blue:/certs/client:ro" jenkins-blue:2.332.2-lts
 
 # 5. Obtener Password Inicial de Administrador
@@ -72,13 +73,19 @@ docker stop foss-dind
 
 # 2. Eliminar Jenkins y Docker in Docker
 docker rm -f foss-jenkins
+docker rm -f foss-jenkins-blue
 docker rm -f foss-dind
 
 # 3. Eliminar Volúmenes
+## Classic
 docker volume rm foss-jenkins-server_certs
 docker volume rm foss-jenkins-server_dind-docker
-docker volume rm foss-jenkins-server_dind-data
 docker volume rm foss-jenkins-server_jenkins-home
+
+## Blue Ocean
+docker volume rm foss-jenkins-server_certs-blue
+docker volume rm foss-jenkins-server_dind-docker-blue
+docker volume rm foss-jenkins-server_jenkins-home-blue
 
 # 4. Eliminar Red
 docker network rm foss
