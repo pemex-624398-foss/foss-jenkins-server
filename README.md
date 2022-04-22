@@ -31,16 +31,30 @@ docker pull docker:20.10.14-dind
 docker network create foss
 
 # 2. Crear Volúmenes
+## Classic
 docker volume create foss-jenkins-server_certs
 docker volume create foss-jenkins-server_dind-docker
 docker volume create foss-jenkins-server_jenkins-home
 
+## Blue Ocean
+docker volume create foss-jenkins-server_certs-blue
+docker volume create foss-jenkins-server_dind-docker-blue
+docker volume create foss-jenkins-server_jenkins-home-blue
+
 # 3. Iniciar Docker in Docker
+## Classic
 docker run --name foss-dind --restart unless-stopped --detach --privileged --network foss --network-alias docker --env DOCKER_TLS_CERTDIR=/certs --volume "foss-jenkins-server_certs:/certs/client" --volume "foss-jenkins-server_dind-docker:/var/lib/docker" --volume "foss-jenkins-server_jenkins-home:/var/jenkins_home" --publish 2376:2376 docker:20.10.14-dind --storage-driver overlay2
 
+## Blue Ocean
+docker run --name foss-dind --restart unless-stopped --detach --privileged --network foss --network-alias docker --env DOCKER_TLS_CERTDIR=/certs --volume "foss-jenkins-server_certs-blue:/certs/client" --volume "foss-jenkins-server_dind-docker-blue:/var/lib/docker" --volume "foss-jenkins-server_jenkins-home-blue:/var/jenkins_home" --publish 2376:2376 docker:20.10.14-dind --storage-driver overlay2
+
 # 4. Iniciar Jenkins
+## Classic
 docker build -t jenkins-docker:2.332.2-lts .
 docker run --name foss-jenkins --restart unless-stopped --detach --privileged --network foss --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --publish 8080:8080 --publish 50000:50000 --volume "/var/run/docker.sock:/var/run/docker.sock" --volume "foss-jenkins-server_jenkins-home:/var/jenkins_home" --volume "foss-jenkins-server_certs:/certs/client:ro" jenkins-docker:2.332.2-lts
+
+docker build -t jenkins-blue:2.332.2-lts .
+docker run --name foss-jenkins-blue --restart unless-stopped --detach --privileged --network foss --env DOCKER_HOST=tcp://docker:2376 --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 --publish 8080:8080 --publish 50000:50000 --volume "/var/run/docker.sock:/var/run/docker.sock" --volume "foss-jenkins-server_jenkins-home-blue:/var/jenkins_home" --volume "foss-jenkins-server_certs-blue:/certs/client:ro" jenkins-blue:2.332.2-lts
 
 # 5. Obtener Password Inicial de Administrador
 docker exec foss-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
